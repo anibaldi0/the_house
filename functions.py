@@ -2,6 +2,9 @@
 import pygame
 from constants import *
 from images import *
+import time
+import sys
+from colors import *
 
 def build_map(surface, map):
     limits = []
@@ -31,18 +34,12 @@ def build_map(surface, map):
 def attancking_skull(surface, ):
     pass
 
-
-import pygame
-import time
-import sys
-from colors import *
-
 def finish():
     pygame.quit()
     sys.exit()
 
 
-def show_move_images(intro_images_list, screen, display_time, width, height):
+def show_intro_images(intro_images_list, screen, display_time, width, height):
 
     current_image = 0
     last_image_time = time.time()
