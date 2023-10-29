@@ -68,5 +68,7 @@ def show_intro_images(intro_images_list, screen, display_time, width, height):
                 if event.key == pygame.K_a:
                     show_images = False
                     print("a")
-                return None
+                return
             
+
+

@@ -119,6 +119,7 @@ moving_up = False
 moving_down = False
 not_moving_down = True
 not_moving_up = True
+intro_ready_player = False
 count_score = 0
 
 wolf_sound = pygame.mixer.music.load("sound/mixkit-wolves-at-scary-forest-2485.wav")
@@ -131,8 +132,17 @@ current_image = 0
 image_display_time = 0.5
 last_image_time = time.time()
 
-intro_ready_player = False
 show_intro_images(list_intro_house, screen, image_display_time, WIDTH, HEIGHT)
+
+if intro_ready_player == False:
+    backup_sound = pygame.mixer.music.load("sound/mixkit-horror-ambience-2482.wav")
+    backup_sound = pygame.mixer.music.play(1)
+    backup_sound = pygame.mixer.music.set_volume(1)
+    print("space")
+    show_intro_images(list_intro_ready_player, screen, 0.5, WIDTH, HEIGHT)
+else:
+    intro_ready_player = True
+    
 
 # bucle principal
 inicio = True
@@ -141,9 +151,12 @@ while inicio:
         if event.type == pygame.QUIT:
             inicio = False
 
-    # eventos
 
+
+    # eventos
         if event.type == pygame.KEYDOWN:
+            # if event.key == pygame.K_SPACE:
+            #     intro_ready_player = True
             if event.key == pygame.K_d:
                 # direction = "right"
                 player_speed_x = 5
@@ -179,14 +192,8 @@ while inicio:
                 player_speed_y = 0
                 moving_down = False
 
-    if intro_ready_player == True:
-        pass
-    else:
-        backup_sound = pygame.mixer.music.load("sound/mixkit-horror-ambience-2482.wav")
-        backup_sound = pygame.mixer.music.play(-1)
-        backup_sound = pygame.mixer.music.set_volume(1)
-        print("space")
-        show_intro_images(list_intro_ready_player, screen, 0.5, WIDTH, HEIGHT)
+    # if intro_ready_player == True:
+    #     pass
 
 
     # logica
@@ -223,7 +230,7 @@ while inicio:
             else:
                 room = room_01
                 player_rect.x = 560
-                player_rect.y = 620
+                player_rect.y = 580
 
     text_score = font_score.render("Score: {0}".format(text_count_score), True, WHITE)
 
@@ -325,4 +332,6 @@ while inicio:
 # salir
 
 pygame.quit()
+
+
 

@@ -1,14 +1,14 @@
 
 map_01 = [
-            "        F       ",
-            " F            F ",
-            "    AFAAF       ",
-            "    AAAFA   MM  ",
-            "    F       MM F",
-            "            MM  ",
-            "            MM  ",
-            " F              ",
-            "        P     F "
+            "MPMMMMMMMMMMMMMM",
+            "M              M",
+            "        MMMMMMM ",
+            "MFMMMM      MMMM",
+            "M MMMM AAAAFMMMM",
+            "M      MMMM   FM",
+            "MFMSSSMMMMMMMM P",
+            "M              M",
+            "MMMMMMMMMMMMMMMM",
             ]
 
 

@@ -7,16 +7,16 @@ pygame.display.set_mode((WIDTH, HEIGHT))
 background_image = pygame.transform.scale(pygame.image.load("images/fondo_negro.png").convert_alpha(), (WIDTH, HEIGHT))
 
 baldoza_wall = pygame.image.load("images/muro_ladrillos.png").convert_alpha()
-baldoza_wall = pygame.transform.scale(baldoza_wall, (WIDTH / 16.5, HEIGHT / 11.2))
+baldoza_wall = pygame.transform.scale(baldoza_wall, (WIDTH / 12, HEIGHT / 9))
 
 baldoza_water = pygame.image.load("images/agua.png").convert()
-baldoza_water = pygame.transform.scale(baldoza_water, (WIDTH / 15, HEIGHT / 10))
+baldoza_water = pygame.transform.scale(baldoza_water, (WIDTH / 12, HEIGHT / 9))
 
 baldoza_tree = pygame.image.load("images/arbol.png").convert_alpha()
 baldoza_tree = pygame.transform.scale(baldoza_tree, (WIDTH / 18, HEIGHT / 10))
 
 baldoza_door = pygame.image.load("images/puerta.png").convert_alpha()
-baldoza_door = pygame.transform.scale(baldoza_door, (WIDTH / 20, HEIGHT / 10))
+baldoza_door = pygame.transform.scale(baldoza_door, (WIDTH / 12, HEIGHT / 9))
 
 baldoza_apple = pygame.image.load("images/manzana.png").convert_alpha()
 baldoza_apple = pygame.transform.scale(baldoza_apple, (40, 40))
