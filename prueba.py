@@ -32,7 +32,7 @@ def show_images_at_start(image1, image2, lapse_time, image_display_time, width, 
     if show_images:
         screen.blit(image1, (0, 0))
     elif last_image_time >= lapse_time:
-        return inicio == True
+        exit()
     else:
         screen.blit(image2, (0, 0))
 

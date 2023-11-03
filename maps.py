@@ -1,21 +1,21 @@
 
 map_01 = [
-            "MPMMMMMMMMMMMMMM",
+            "MMMMMMMMMMMMMMMM",
             "M              M",
-            "        MMMMMMM ",
+            "M MMMM  MMMMMKMM",
             "MFMMMM      MMMM",
             "M MMMM AAAAFMMMM",
             "M      MMMM   FM",
             "MFMSSSMMMMMMMM P",
-            "M              M",
+            "M             SM",
             "MMMMMMMMMMMMMMMM",
             ]
 
 
 map_02 = [
-            "    P         F ",
+            "  K           F ",
             "         AAFA   ",
-            " F       FAAA   ",
+            " F       FAAP   ",
             "         AFAA   ",
             "     F          ",
             "F  SSSS         ",
@@ -23,3 +23,4 @@ map_02 = [
             "                ",
             "       F      F "
 ]
+

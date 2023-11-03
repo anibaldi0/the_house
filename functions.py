@@ -10,6 +10,7 @@ def build_map(surface, map):
     limits = []
     fruits = []
     doors = []
+    keys = []
     x = 0
     y = 0
 
@@ -22,13 +23,15 @@ def build_map(surface, map):
             elif baldoza == "A":
                 limits.append([baldoza_tree, pygame.Rect(x, y, *BALDOZA)])
             elif baldoza == "F":
-                fruits.append([baldoza_apple, pygame.Rect(x + 20, y + 20, *BALDOZA_APPLE)])
+                fruits.append([baldoza_apple_01, pygame.Rect(x + 20, y + 20, *BALDOZA_APPLE)])
             elif baldoza == "P":
                 doors.append([baldoza_door, pygame.Rect(x, y, *BALDOZA)])
+            elif baldoza == "K":
+                keys.append([baldoza_key, pygame.Rect(x + 10, y + 10, *BALDOZA_KEY)])
             x += 80
         x = 0
         y += 80
-    return limits, fruits, doors
+    return limits, fruits, doors, keys
 
 
 def attancking_skull(surface, ):
@@ -70,5 +73,16 @@ def show_intro_images(intro_images_list, screen, display_time, width, height):
                     print("a")
                 return
             
+
+
+def check_key_collision(keys, player_center, text_count_key):
+    key_sound = pygame.mixer.Sound("sound/mixkit-arcade-score-interface-217.wav")
+    for key in keys[:]:
+        if key[1].collidepoint(player_center):
+            key_sound.play()
+            keys.remove(key)
+            text_count_key += 1
+    return text_count_key
+
 
 

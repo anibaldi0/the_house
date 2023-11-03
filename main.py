@@ -26,105 +26,51 @@ clock = pygame.time.Clock()
 
 # funciones in functions.py
 
-# def build_map(surface, map):
-#     limits = []
-#     fruits = []
-#     doors = []
-#     x = 0
-#     y = 0
-
-#     for line in map:
-#         for baldoza in line:
-#             if baldoza == "M":
-#                 limits.append([baldoza_wall, pygame.Rect(x, y, *BALDOZA)])
-#             elif baldoza == "S":
-#                 limits.append([baldoza_water, pygame.Rect(x, y, *BALDOZA)])
-#             elif baldoza == "A":
-#                 limits.append([baldoza_tree, pygame.Rect(x, y, *BALDOZA)])
-#             elif baldoza == "F":
-#                 fruits.append([baldoza_apple, pygame.Rect(x + 20, y + 20, *BALDOZA_APPLE)])
-#             elif baldoza == "P":
-#                 doors.append([baldoza_door, pygame.Rect(x, y, *BALDOZA)])
-#             x += 80
-#         x = 0
-#         y += 80
-#     return limits, fruits, doors
-
 # ventana
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
-
+pumpkin = pygame.image.load("images/calabaza_01.png")
+pygame.display.set_icon(pumpkin)
+pygame.display.set_caption("The House")
 
 # images
-# background_image = pygame.transform.scale(pygame.image.load("images/fondo_negro.png").convert_alpha(), (WIDTH, HEIGHT))
 
-# baldoza_wall = pygame.image.load("images/muro_ladrillos.png").convert_alpha()
-# baldoza_wall = pygame.transform.scale(baldoza_wall, (WIDTH / 16.5, HEIGHT / 11.2))
-
-# baldoza_water = pygame.image.load("images/agua.png").convert()
-# baldoza_water = pygame.transform.scale(baldoza_water, (WIDTH / 15, HEIGHT / 10))
-
-# baldoza_tree = pygame.image.load("images/arbol.png").convert_alpha()
-# baldoza_tree = pygame.transform.scale(baldoza_tree, (WIDTH / 18, HEIGHT / 10))
-
-# baldoza_door = pygame.image.load("images/puerta.png").convert_alpha()
-# baldoza_door = pygame.transform.scale(baldoza_door, (WIDTH / 20, HEIGHT / 10))
-
-# baldoza_apple = pygame.image.load("images/manzana.png").convert_alpha()
-# baldoza_apple = pygame.transform.scale(baldoza_apple, (40, 40))
-
-
-# player_backwards = pygame.transform.scale(pygame.image.load("images/muneco_blanco_espalda.png"), (WIDTH / 40, HEIGHT / 15)).convert_alpha()
-
-# player_forward = pygame.transform.scale(pygame.image.load("images/muneco_blanco_frente.png"), (WIDTH / 40, HEIGHT / 15)).convert_alpha()
-
-# player_walking_forward_00 = pygame.transform.scale(pygame.image.load("images/muneco_blanco_frente.png"), (WIDTH / 40, HEIGHT / 15)).convert_alpha()
-
-# player_walking_forward_01 = pygame.transform.scale(pygame.image.load("images/muneco_blanco_camina_frente_01.png"), (WIDTH / 40, HEIGHT / 15)).convert_alpha()
-
-# player_walking_forward_02 = pygame.transform.scale(pygame.image.load("images/muneco_blanco_frente.png"), (WIDTH / 40, HEIGHT / 15)).convert_alpha()
-
-# player_walking_forward_03 = pygame.transform.scale(pygame.image.load("images/muneco_blanco_camina_frente_02.png"), (WIDTH / 40, HEIGHT / 15)).convert_alpha()
-
-# player_walking_away_00 = pygame.transform.scale(pygame.image.load("images/muneco_blanco_espalda.png"), (WIDTH / 40, HEIGHT / 15)).convert_alpha()
-
-# player_walking_away_01 = pygame.transform.scale(pygame.image.load("images/muneco_blanco_camina_espalda_01.png"), (WIDTH / 40, HEIGHT / 15)).convert_alpha()
-
-# player_walking_away_02 = pygame.transform.scale(pygame.image.load("images/muneco_blanco_espalda.png"), (WIDTH / 40, HEIGHT / 15)).convert_alpha()
-
-# player_walking_away_03 = pygame.transform.scale(pygame.image.load("images/muneco_blanco_camina_espalda_02.png"), (WIDTH / 40, HEIGHT / 15)).convert_alpha()
-
-player_image = player_forward # el juego empieza con el jugador de frente
-
-# textos
-font_score = pygame.font.Font(None, 36)
-text_count_score = 0
-
-# datos
+# datas
 room_01 = build_map(screen, map_01)
 room_02 = build_map(screen, map_02)
 
 room = room_01 # el juego empieza en la habitacion 1
 
+player_image = player_forward # el juego empieza con el jugador de frente
+
 player_rect = player_image.get_rect()
 player_rect.x = 100
-player_rect.y = 300
+player_rect.y = 100
 player_speed_x = 0
 player_speed_y = 0
 frames_player = 0
+frames_bat = 0
+text_count_score = 0
+text_count_key = 0
+lives = 500
 
 moving_right = False
 moving_left = False
 moving_up = False
 moving_down = False
-not_moving_down = True
-not_moving_up = True
+not_moving_pumpkin = True
 intro_ready_player = False
-count_score = 0
+collision_with_water = False
+collision_with_door = False
+collision_with_tree = False 
 
 wolf_sound = pygame.mixer.music.load("sound/mixkit-wolves-at-scary-forest-2485.wav")
 wolf_sound = pygame.mixer.music.play(1)
 wolf_sound = pygame.mixer.music.set_volume(0.5)
+
+pumpkin_sound = pygame.mixer.Sound("sound/mixkit-unlock-new-item-game-notification-254.wav")
+close_door = pygame.mixer.Sound("sound/mixkit-arcade-retro-jump-223.wav")
+open_door = pygame.mixer.Sound("sound/mixkit-arcade-game-complete-or-approved-mission-205.wav")
 
 list_intro_house = [image_intro_house_01, image_intro_house_02]
 list_intro_ready_player = [image_intro_ready_player_01, image_intro_ready_player_02]
@@ -150,8 +96,6 @@ while inicio:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             inicio = False
-
-
 
     # eventos
         if event.type == pygame.KEYDOWN:
@@ -192,10 +136,6 @@ while inicio:
                 player_speed_y = 0
                 moving_down = False
 
-    # if intro_ready_player == True:
-    #     pass
-
-
     # logica
     player_rect.x += player_speed_x  # se actualiza las coordenadas del player
     player_rect.y += player_speed_y
@@ -215,24 +155,65 @@ while inicio:
         if limit[1].colliderect(player_rect):
             player_rect.x -= player_speed_x
             player_rect.y -= player_speed_y
+            if limit[0] == baldoza_tree:
+                close_door.play()
+                collision_with_tree = True
+                lives -= 1
+            if limit[0] == baldoza_water:
+                close_door.play()
+                collision_with_water = True
+                lives -= 1
+            elif limit[0] == baldoza_door:
+                if text_count_key <= 0:
+                    collision_with_door = True
+                    lives -= 5
 
     for fruit in room[1][:]:
         if fruit[1].collidepoint(player_center):
             room[1].remove(fruit)
             text_count_score += 1
+            pumpkin_sound.play()
+            if lives < 500:
+                lives += 50
+            else:
+                lives = 500
 
+    text_count_key = check_key_collision(room[3], player_center, text_count_key)
+
+        
     for door in room[2]:
         if door[1].collidepoint(player_center):
             if room == room_01:
-                room = room_02
-                player_rect.x = 400
-                player_rect.y = 600
-            else:
-                room = room_01
-                player_rect.x = 560
-                player_rect.y = 580
+                if text_count_key > 0:
+                    open_door.play()
+                    room = room_02
+                    player_rect.x = 400
+                    player_rect.y = 600
+                    text_count_key -= 1
+                else:
+                    close_door.play()
+                    collision_with_door = True
+                    lives -= 5
+                        
+
+            elif room == room_02:
+                if text_count_key > 0:
+                    open_door.play()
+                    room = room_01
+                    player_rect.x = 560
+                    player_rect.y = 580
+                    text_count_key -= 1
+                else:
+                    close_door.play()
+                    collision_with_door = True
+                    lives -= 5
+
+    # textos
+    font_score = pygame.font.Font(None, 45)
 
     text_score = font_score.render("Score: {0}".format(text_count_score), True, WHITE)
+    text_lives = font_score.render("Lives: {0}".format(lives), True, RED)
+    text_key = font_score.render("Keys: {0}".format(text_count_key), True, ORANGE)
 
     # dibujos
     
@@ -310,15 +291,17 @@ while inicio:
 
         screen.blit(player_image, player_rect)
 
-
     # hitbox
-    # pygame.draw.rect(screen, "blue", player_rect, 3)
 
-    for apple in fruit[1]:
-        pygame.draw.rect(screen, "red", fruit[1], 3)
+    # posicionar el texto para hacer un offset
+    text_position_score = (550, 100)
+    text_position_lives = (300, 100)
+    text_position_key = (800, 100)
 
     # dibujar texto
-    screen.blit(text_score, (WIDTH / 2, 50))
+    screen.blit(text_score, text_position_score)
+    screen.blit(text_lives, text_position_lives)
+    screen.blit(text_key, text_position_key)
 
     # actualizar
     pygame.display.flip()
