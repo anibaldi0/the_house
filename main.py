@@ -11,7 +11,7 @@ from images import *
 
 # inicializar
 pygame.init()
-pygame.mixer.init()
+# pygame.mixer.init()
 
 
 # reloj
@@ -41,6 +41,11 @@ room_02 = build_map(screen, map_02)
 
 room = room_01 # el juego empieza en la habitacion 1
 
+font_win_game = pygame.font.Font(None, 72)
+win_game_text = font_win_game.render("You win the game!", True, WHITE)
+win_game_rect = win_game_text.get_rect()
+win_game_rect.center = (WIDTH // 2, HEIGHT // 2)
+
 player_image = player_forward # el juego empieza con el jugador de frente
 
 player_rect = player_image.get_rect()
@@ -53,6 +58,17 @@ frames_bat = 0
 text_count_score = 0
 text_count_key = 0
 lives = 500
+
+# bat
+bat_position = [0, 100]
+bat_speed = 2
+bat_direction_x = 1
+
+#skull
+skull_position = [0, 250]
+skull_speed = 3
+skull_direction_x = 1
+
 
 moving_right = False
 moving_left = False
@@ -71,12 +87,16 @@ wolf_sound = pygame.mixer.music.set_volume(0.5)
 pumpkin_sound = pygame.mixer.Sound("sound/mixkit-unlock-new-item-game-notification-254.wav")
 close_door = pygame.mixer.Sound("sound/mixkit-arcade-retro-jump-223.wav")
 open_door = pygame.mixer.Sound("sound/mixkit-arcade-game-complete-or-approved-mission-205.wav")
+laser_sound = pygame.mixer.Sound("sound/blaster-2-81267.mp3")
+
 
 list_intro_house = [image_intro_house_01, image_intro_house_02]
 list_intro_ready_player = [image_intro_ready_player_01, image_intro_ready_player_02]
 current_image = 0
 image_display_time = 0.5
 last_image_time = time.time()
+
+
 
 show_intro_images(list_intro_house, screen, image_display_time, WIDTH, HEIGHT)
 
@@ -117,6 +137,27 @@ while inicio:
                 # direction = "down"
                 player_speed_y = 5
                 moving_down = True
+            if event.key == pygame.K_UP:
+                # shoot
+                if event.key == pygame.K_UP:
+                    if laser_state == "ready":
+                        laser_sound.play()
+                        laser_x = player_rect.x + player_rect.width  # Posiciona el láser a la derecha del jugador
+                        laser_y = player_rect.y + 15
+                        laser_state = "fired"
+                if pygame.key.get_pressed()[pygame.K_d]:  # Verifica si K_UP y K_d están presionadas simultáneamente
+                    if laser_state == "ready":
+                        laser_sound.play()
+                        laser_x = player_rect.x + player_rect.width # Posiciona el láser a la derecha del jugador
+                        laser_y = player_rect.y + 15
+                        laser_state = "fired"
+                elif pygame.key.get_pressed()[pygame.K_a]:  # Verifica si K_UP y K_a están presionadas simultáneamente
+                    if laser_state == "ready":
+                        laser_sound.play()
+                        laser_x = player_rect.x - laser_width # Posiciona el láser a la izquierda del jugador
+                        laser_y = player_rect.y + 15
+                        laser_state = "fired"
+
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_d:
@@ -159,7 +200,7 @@ while inicio:
                 close_door.play()
                 collision_with_tree = True
                 lives -= 1
-            if limit[0] == baldoza_water:
+            elif limit[0] == baldoza_water:
                 close_door.play()
                 collision_with_water = True
                 lives -= 1
@@ -167,6 +208,42 @@ while inicio:
                 if text_count_key <= 0:
                     collision_with_door = True
                     lives -= 5
+
+    # Crear un rectángulo para el láser
+    if laser_state == "fired":
+        laser_x += laser_speed * laser_direction_x
+        # laser_y += laser_speed * laser_direction_y
+        laser_rect = pygame.Rect(laser_x, laser_y, laser_width, laser_height)
+            
+
+        # Verificar colisión con las paredes
+        for wall in room[0]:
+            if wall[1].colliderect(laser_rect):
+                laser_state = "ready"
+                # Puedes hacer más cosas aquí, como reproducir un sonido de impacto, etc.
+
+        # Verificar colisión laser con baldoza_water
+        for water in room[0]:
+            if water[1].colliderect(laser_rect) and water[0] == baldoza_water:
+                # Si colisiona con baldoza_water, continúa moviéndose
+                continue
+
+    # verificar colision entre player y bat
+    if player_rect.colliderect(pygame.Rect(bat_position, (60, 60))):
+        lives -= 1
+    elif player_rect.colliderect(pygame.Rect(skull_position, (60, 60))):
+        lives -= 1
+
+    # Verificar colisión del láser con el bat
+    if laser_state == "fired" and laser_rect.colliderect(pygame.Rect(bat_position, (60, 60))):
+        # Se ha producido una colisión entre el láser y el bat
+        laser_state = "ready"  # Restablecer el estado del láser
+        # Aquí puedes agregar más lógica, como restar puntos al bat, reproducir un sonido, etc.
+    elif laser_state == "fired" and laser_rect.colliderect(pygame.Rect(skull_position, (60, 60))):
+        # Se ha producido una colisión entre el láser y el bat
+        laser_state = "ready"  # Restablecer el estado del láser
+        # Aquí puedes agregar más lógica, como restar puntos al bat, reproducir un sonido, etc.
+        
 
     for fruit in room[1][:]:
         if fruit[1].collidepoint(player_center):
@@ -179,7 +256,6 @@ while inicio:
                 lives = 500
 
     text_count_key = check_key_collision(room[3], player_center, text_count_key)
-
         
     for door in room[2]:
         if door[1].collidepoint(player_center):
@@ -199,10 +275,9 @@ while inicio:
             elif room == room_02:
                 if text_count_key > 0:
                     open_door.play()
-                    room = room_01
-                    player_rect.x = 560
-                    player_rect.y = 580
-                    text_count_key -= 1
+                    screen.blit(win_game_text, win_game_rect)
+                    pygame.display.flip()
+                    pygame.time.delay(2000)
                 else:
                     close_door.play()
                     collision_with_door = True
@@ -218,6 +293,17 @@ while inicio:
     # dibujos
     
     screen.blit(background_image, (0, 0))
+
+        # posicionar el texto para hacer un offset
+    text_position_score = (550, 100)
+    text_position_lives = (300, 100)
+    text_position_key = (800, 100)
+
+
+    # dibujar texto
+    screen.blit(text_score, text_position_score)
+    screen.blit(text_lives, text_position_lives)
+    screen.blit(text_key, text_position_key)
 
     for element in room:
         for baldoza in element:
@@ -291,17 +377,64 @@ while inicio:
 
         screen.blit(player_image, player_rect)
 
+    # Lógica del movimiento del láser
+    if laser_state == "fired":
+        laser_x += laser_speed * laser_direction_x
+
+        # Verificar los límites y cambiar el estado del láser si es necesario
+        if laser_x >= WIDTH or laser_x <= 0 or laser_y >= HEIGHT or laser_y <= 0:
+            laser_state = "ready"
+
+        # Crear un rectángulo para el láser
+        laser_rect = pygame.Rect(laser_x, laser_y, laser_width, laser_height)
+
+    # Eventos para cambiar la dirección del láser
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_a] and laser_state == "ready":
+        laser_direction_x = -1
+        laser_direction_y = 0
+    if keys[pygame.K_d] and laser_state == "ready":
+        laser_direction_x = 1
+        laser_direction_y = 0
+
+    # Dibujar láser si está en estado "fired"
+    if laser_state == "fired":
+        create_laser(screen, laser_x, laser_y)
+
+    # Dibujar láser si está en estado "fired"
+    if laser_state == "fired":
+        pygame.draw.rect(screen, GREEN, laser_rect, 2)
+
+    # Actualizar rectángulo 1
+    bat_position, bat_direction_x = create_monsters_movements(
+        bat_position, bat_direction_x, bat_speed
+    )
+
+    # Actualizar rectángulo 2
+    skull_position, skull_direction_x = create_monsters_movements(
+        skull_position, skull_direction_x, skull_speed
+    )
+
+    # Dibujar hitbox verde para rectángulo 1
+    pygame.draw.rect(screen, GREEN, bat_position + [60, 60], 2)
+
+    # Dibujar rectángulo 1
+    if bat_direction_x == 1:
+        screen.blit(bat_right, bat_position)
+    else:
+        screen.blit(bat_left, bat_position)
+
+    # Dibujar hitbox verde para rectángulo 2
+    pygame.draw.rect(screen, GREEN, skull_position + [60, 60], 2)
+
+    # Dibujar rectángulo 2
+    if skull_direction_x == 1:
+        screen.blit(skull_right, skull_position)
+    else:
+        screen.blit(skull_left, skull_position)
+
+
     # hitbox
-
-    # posicionar el texto para hacer un offset
-    text_position_score = (550, 100)
-    text_position_lives = (300, 100)
-    text_position_key = (800, 100)
-
-    # dibujar texto
-    screen.blit(text_score, text_position_score)
-    screen.blit(text_lives, text_position_lives)
-    screen.blit(text_key, text_position_key)
 
     # actualizar
     pygame.display.flip()

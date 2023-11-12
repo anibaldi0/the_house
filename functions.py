@@ -1,13 +1,26 @@
 
 import pygame
 from constants import *
-from images import *
+from images import baldoza_wall, baldoza_water, baldoza_tree, baldoza_door, baldoza_apple_01, baldoza_key
 import time
 import sys
 from colors import *
+import random
+
+# Variables del láser
+laser_width = 20
+laser_height = 20
+laser_color = RED
+laser_speed = 20
+laser_state = "ready"  # Puede estar "ready" o "fire"
+laser_direction_x = 1
+# laser_direction_y = 1
+laser_x = 0
+laser_y = 0
 
 def build_map(surface, map):
     limits = []
+    waters = []
     fruits = []
     doors = []
     keys = []
@@ -19,7 +32,7 @@ def build_map(surface, map):
             if baldoza == "M":
                 limits.append([baldoza_wall, pygame.Rect(x, y, *BALDOZA)])
             elif baldoza == "S":
-                limits.append([baldoza_water, pygame.Rect(x, y, *BALDOZA)])
+                waters.append([baldoza_water, pygame.Rect(x, y, *BALDOZA)])
             elif baldoza == "A":
                 limits.append([baldoza_tree, pygame.Rect(x, y, *BALDOZA)])
             elif baldoza == "F":
@@ -31,7 +44,7 @@ def build_map(surface, map):
             x += 80
         x = 0
         y += 80
-    return limits, fruits, doors, keys
+    return limits, fruits, doors, keys, waters
 
 
 def attancking_skull(surface, ):
@@ -73,6 +86,8 @@ def show_intro_images(intro_images_list, screen, display_time, width, height):
                     print("a")
                 return
             
+def create_laser(screen, x, y):
+    pygame.draw.rect(screen, laser_color, [x, y, laser_width, laser_height])
 
 
 def check_key_collision(keys, player_center, text_count_key):
@@ -84,5 +99,16 @@ def check_key_collision(keys, player_center, text_count_key):
             text_count_key += 1
     return text_count_key
 
+def create_monsters_movements(rect, direction_x, speed):
+    # Actualizar posición del rectángulo
+    rect[0] += speed * direction_x
+
+    # Cambiar dirección cuando alcanza ciertas coordenadas
+    if rect[0] >= WIDTH - 60 and direction_x == 1:
+        direction_x = -1
+    elif rect[0] <= 0 and direction_x == -1:
+        direction_x = 1
+
+    return rect, direction_x
 
 

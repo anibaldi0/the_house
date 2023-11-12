@@ -47,11 +47,12 @@ player_walking_away_03 = pygame.transform.scale(pygame.image.load("images/muneco
 
 
 # craneos masticando
-bat_right_00 = pygame.transform.scale(pygame.image.load("images/bat_der_01.png"), (WIDTH / 40, HEIGHT / 15)).convert_alpha()
-bat_right_01 = pygame.transform.scale(pygame.image.load("images/bat_der_02.png"), (WIDTH / 40, HEIGHT / 15)).convert_alpha()
+skull_right = pygame.transform.scale(pygame.image.load("images/craneo_derecha_02.png"), (60, 60)).convert_alpha()
+skull_left = pygame.transform.flip(skull_right, True, False)  # Voltear horizontalmente
 
-bat_left_02 = pygame.transform.scale(pygame.image.load("images/bat_izq_01.png"), (WIDTH / 40, HEIGHT / 15)).convert_alpha()
-bat_left_03 = pygame.transform.scale(pygame.image.load("images/bat_izq_02.png"), (WIDTH / 40, HEIGHT / 15)).convert_alpha()
+# craneos masticando
+bat_right = pygame.transform.scale(pygame.image.load("images/bat_der_01.png"), (60, 60)).convert_alpha()
+bat_left = pygame.transform.flip(bat_right, True, False)  # Voltear horizontalmente
 
 
 # intro casa
