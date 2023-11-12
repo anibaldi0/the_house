@@ -39,33 +39,36 @@ pygame.display.set_caption("The House")
 room_01 = build_map(screen, map_01)
 room_02 = build_map(screen, map_02)
 
-room = room_01 # el juego empieza en la habitacion 1
+# el juego empieza en la habitacion 1
+room = room_01
 
 font_win_game = pygame.font.Font(None, 72)
 win_game_text = font_win_game.render("You win the game!", True, WHITE)
 win_game_rect = win_game_text.get_rect()
 win_game_rect.center = (WIDTH // 2, HEIGHT // 2)
 
-player_image = player_forward # el juego empieza con el jugador de frente
+# el juego empieza con el jugador de frente
+player_image = player_forward 
 
 player_rect = player_image.get_rect()
 player_rect.x = 100
-player_rect.y = 100
+player_rect.y = 170
 player_speed_x = 0
 player_speed_y = 0
+player_speed = 3
 frames_player = 0
-frames_bat = 0
+# frames_bat = 0
 text_count_score = 0
 text_count_key = 0
 lives = 500
 
 # bat
-bat_position = [0, 100]
-bat_speed = 2
+bat_position = [80, 100]
+bat_speed = 5
 bat_direction_x = 1
 
 #skull
-skull_position = [0, 250]
+skull_position = [500, 250]
 skull_speed = 3
 skull_direction_x = 1
 
@@ -85,7 +88,7 @@ wolf_sound = pygame.mixer.music.play(1)
 wolf_sound = pygame.mixer.music.set_volume(0.5)
 
 pumpkin_sound = pygame.mixer.Sound("sound/mixkit-unlock-new-item-game-notification-254.wav")
-close_door = pygame.mixer.Sound("sound/mixkit-arcade-retro-jump-223.wav")
+lives_down = pygame.mixer.Sound("sound/mixkit-arcade-retro-jump-223.wav")
 open_door = pygame.mixer.Sound("sound/mixkit-arcade-game-complete-or-approved-mission-205.wav")
 laser_sound = pygame.mixer.Sound("sound/blaster-2-81267.mp3")
 
@@ -123,19 +126,19 @@ while inicio:
             #     intro_ready_player = True
             if event.key == pygame.K_d:
                 # direction = "right"
-                player_speed_x = 5
+                player_speed_x = player_speed
                 moving_right = True
             if event.key == pygame.K_a:
                 # direction = "left"
-                player_speed_x = -5
+                player_speed_x = -player_speed
                 moving_left = True
             if event.key == pygame.K_w:
                 # direction = "up"
-                player_speed_y = -5
+                player_speed_y = -player_speed
                 moving_up = True
             if event.key == pygame.K_s:
                 # direction = "down"
-                player_speed_y = 5
+                player_speed_y = player_speed
                 moving_down = True
             if event.key == pygame.K_UP:
                 # shoot
@@ -197,11 +200,11 @@ while inicio:
             player_rect.x -= player_speed_x
             player_rect.y -= player_speed_y
             if limit[0] == baldoza_tree:
-                close_door.play()
+                lives_down.play()
                 collision_with_tree = True
                 lives -= 1
             elif limit[0] == baldoza_water:
-                close_door.play()
+                lives_down.play()
                 collision_with_water = True
                 lives -= 1
             elif limit[0] == baldoza_door:
@@ -230,12 +233,15 @@ while inicio:
 
     # verificar colision entre player y bat
     if player_rect.colliderect(pygame.Rect(bat_position, (60, 60))):
+        lives_down.play()
         lives -= 1
     elif player_rect.colliderect(pygame.Rect(skull_position, (60, 60))):
+        lives_down.play()
         lives -= 1
 
     # Verificar colisión del láser con el bat
     if laser_state == "fired" and laser_rect.colliderect(pygame.Rect(bat_position, (60, 60))):
+        
         # Se ha producido una colisión entre el láser y el bat
         laser_state = "ready"  # Restablecer el estado del láser
         # Aquí puedes agregar más lógica, como restar puntos al bat, reproducir un sonido, etc.
@@ -267,7 +273,7 @@ while inicio:
                     player_rect.y = 600
                     text_count_key -= 1
                 else:
-                    close_door.play()
+                    lives_down.play()
                     collision_with_door = True
                     lives -= 5
                         
@@ -279,7 +285,7 @@ while inicio:
                     pygame.display.flip()
                     pygame.time.delay(2000)
                 else:
-                    close_door.play()
+                    lives_down.play()
                     collision_with_door = True
                     lives -= 5
 
@@ -405,18 +411,15 @@ while inicio:
     if laser_state == "fired":
         pygame.draw.rect(screen, GREEN, laser_rect, 2)
 
-    # Actualizar rectángulo 1
-    bat_position, bat_direction_x = create_monsters_movements(
-        bat_position, bat_direction_x, bat_speed
-    )
+    # Actualizar rectángulo 1 (bat)
+    bat_position, bat_direction_x = create_monsters_movements(bat_position, bat_direction_x, bat_speed, (80, 1200 - 60))
 
-    # Actualizar rectángulo 2
-    skull_position, skull_direction_x = create_monsters_movements(
-        skull_position, skull_direction_x, skull_speed
-    )
+    # Actualizar rectángulo 2 (skull)
+    skull_position, skull_direction_x = create_monsters_movements(skull_position, skull_direction_x, skull_speed, (480, 960 - 60))
+
 
     # Dibujar hitbox verde para rectángulo 1
-    pygame.draw.rect(screen, GREEN, bat_position + [60, 60], 2)
+    # pygame.draw.rect(screen, GREEN, bat_position + [60, 60], 2)
 
     # Dibujar rectángulo 1
     if bat_direction_x == 1:
@@ -425,7 +428,7 @@ while inicio:
         screen.blit(bat_left, bat_position)
 
     # Dibujar hitbox verde para rectángulo 2
-    pygame.draw.rect(screen, GREEN, skull_position + [60, 60], 2)
+    # pygame.draw.rect(screen, GREEN, skull_position + [60, 60], 2)
 
     # Dibujar rectángulo 2
     if skull_direction_x == 1:

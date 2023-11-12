@@ -11,7 +11,7 @@ import random
 laser_width = 20
 laser_height = 20
 laser_color = RED
-laser_speed = 20
+laser_speed = 5
 laser_state = "ready"  # Puede estar "ready" o "fire"
 laser_direction_x = 1
 # laser_direction_y = 1
@@ -99,16 +99,21 @@ def check_key_collision(keys, player_center, text_count_key):
             text_count_key += 1
     return text_count_key
 
-def create_monsters_movements(rect, direction_x, speed):
-    # Actualizar posición del rectángulo
-    rect[0] += speed * direction_x
+def create_monsters_movements(position, direction, speed, direction_limit):
+    # Desempaquetar las coordenadas x e y
+    x, y = position
 
-    # Cambiar dirección cuando alcanza ciertas coordenadas
-    if rect[0] >= WIDTH - 60 and direction_x == 1:
-        direction_x = -1
-    elif rect[0] <= 0 and direction_x == -1:
-        direction_x = 1
+    # Actualizar la posición basada en la dirección y la velocidad
+    x += speed * direction
 
-    return rect, direction_x
+    # Verificar los límites y cambiar la dirección si es necesario
+    if x < direction_limit[0] or x > direction_limit[1]:
+        direction *= -1
+
+    # Devolver las nuevas coordenadas y la dirección actualizada
+    return [x, y], direction
+
+
+
 
 
