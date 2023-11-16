@@ -33,7 +33,27 @@ pumpkin = pygame.image.load("images/calabaza_01.png")
 pygame.display.set_icon(pumpkin)
 pygame.display.set_caption("The House")
 
-# images
+def terminar():
+    pygame.quit()
+    exit()
+
+def wait_user():
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminar()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    terminar()
+                return
+            
+def show_paused_text(surface, texto, fuente, coordenadas, color_fuente):
+    paused_text = fuente.render(texto, True, color_fuente)
+    rect_paused_text = paused_text.get_rect()
+    rect_paused_text.center = coordenadas
+    surface.blit(paused_text, rect_paused_text)
+    pygame.display.flip()
+
 
 # datas
 room_01 = build_map(screen, map_01)
@@ -62,6 +82,9 @@ text_count_score = 0
 text_count_key = 0
 lives = 500
 
+# time
+current_time = 0
+
 # bat
 bat_position = [80, 100]
 bat_speed = 5
@@ -81,16 +104,22 @@ not_moving_pumpkin = True
 intro_ready_player = False
 collision_with_water = False
 collision_with_door = False
-collision_with_tree = False 
+collision_with_tree = False
+paused = False
+playing_music = True
+
 
 wolf_sound = pygame.mixer.music.load("sound/mixkit-wolves-at-scary-forest-2485.wav")
 wolf_sound = pygame.mixer.music.play(1)
 wolf_sound = pygame.mixer.music.set_volume(0.5)
 
 pumpkin_sound = pygame.mixer.Sound("sound/mixkit-unlock-new-item-game-notification-254.wav")
+pumpkin_sound.set_volume(0.4)
 lives_down = pygame.mixer.Sound("sound/mixkit-arcade-retro-jump-223.wav")
+lives_down.set_volume(0.2)
 open_door = pygame.mixer.Sound("sound/mixkit-arcade-game-complete-or-approved-mission-205.wav")
 laser_sound = pygame.mixer.Sound("sound/blaster-2-81267.mp3")
+laser_sound.set_volume(0.1)
 
 
 list_intro_house = [image_intro_house_01, image_intro_house_02]
@@ -111,11 +140,17 @@ if intro_ready_player == False:
     show_intro_images(list_intro_ready_player, screen, 0.5, WIDTH, HEIGHT)
 else:
     intro_ready_player = True
-    
 
+ultima_actualizacion = pygame.time.get_ticks()
+interval = 100
+frame = 0
+    
 # bucle principal
 inicio = True
 while inicio:
+
+    elapsed_time = pygame.time.get_ticks()
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             inicio = False
@@ -160,7 +195,14 @@ while inicio:
                         laser_x = player_rect.x - laser_width # Posiciona el láser a la izquierda del jugador
                         laser_y = player_rect.y + 15
                         laser_state = "fired"
-
+            if event.key == pygame.K_p:
+                if playing_music:
+                    pygame.mixer.music.pause()
+                show_paused_text(screen, "PAUSED", font_score, (WIDTH / 2, HEIGHT / 2), RED)
+                wait_user()
+                if playing_music:
+                    pygame.mixer.music.unpause()
+                
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_d:
@@ -218,7 +260,6 @@ while inicio:
         # laser_y += laser_speed * laser_direction_y
         laser_rect = pygame.Rect(laser_x, laser_y, laser_width, laser_height)
             
-
         # Verificar colisión con las paredes
         for wall in room[0]:
             if wall[1].colliderect(laser_rect):
@@ -241,15 +282,42 @@ while inicio:
 
     # Verificar colisión del láser con el bat
     if laser_state == "fired" and laser_rect.colliderect(pygame.Rect(bat_position, (60, 60))):
-        
+        text_count_score += 2
+        bat_position = [-100, -100]
+        # current_time = 0  # Reiniciar el temporizador aquí
         # Se ha producido una colisión entre el láser y el bat
         laser_state = "ready"  # Restablecer el estado del láser
-        # Aquí puedes agregar más lógica, como restar puntos al bat, reproducir un sonido, etc.
     elif laser_state == "fired" and laser_rect.colliderect(pygame.Rect(skull_position, (60, 60))):
+        text_count_score += 2
+        skull_position = [-100, -100]
+        # current_time = 0  # Reiniciar el temporizador aquí
         # Se ha producido una colisión entre el láser y el bat
         laser_state = "ready"  # Restablecer el estado del láser
         # Aquí puedes agregar más lógica, como restar puntos al bat, reproducir un sonido, etc.
         
+    # Incrementar el tiempo transcurrido
+    current_time = pygame.time.get_ticks()
+    if current_time - ultima_actualizacion >= interval:
+        frame += 1
+        if bat_position == [-100, -100] and frame >= interval:
+            bat_position = [80, 100]
+            frame = 0
+        elif skull_position == [-100, -100] and frame >= interval:
+            skull_position = [500, 250]
+            frame = 0
+        elif text_count_key == 1 and frame >= interval:
+            text_count_key -= 1
+            room[3].append([baldoza_key, pygame.Rect(1050, 160, *BALDOZA_KEY)])
+            print(text_count_key)
+        print(bat_position, frame)
+        ultima_actualizacion = current_time
+
+    text_count_key = check_key_collision(room[3], player_center, text_count_key)
+    print(text_count_key)
+    if text_count_key == 1 and current_time > 5000 * 1000:
+        text_count_key -= 1
+        room[3].append([baldoza_key, pygame.Rect(1050, 160, *BALDOZA_KEY)])
+        print(text_count_key)
 
     for fruit in room[1][:]:
         if fruit[1].collidepoint(player_center):
@@ -260,9 +328,8 @@ while inicio:
                 lives += 50
             else:
                 lives = 500
-
-    text_count_key = check_key_collision(room[3], player_center, text_count_key)
         
+
     for door in room[2]:
         if door[1].collidepoint(player_center):
             if room == room_01:
@@ -297,19 +364,22 @@ while inicio:
     text_key = font_score.render("Keys: {0}".format(text_count_key), True, ORANGE)
 
     # dibujos
-    
     screen.blit(background_image, (0, 0))
 
         # posicionar el texto para hacer un offset
     text_position_score = (550, 100)
     text_position_lives = (300, 100)
     text_position_key = (800, 100)
+    paused_position_text = (550, 500)
+    
 
 
     # dibujar texto
     screen.blit(text_score, text_position_score)
     screen.blit(text_lives, text_position_lives)
     screen.blit(text_key, text_position_key)
+
+    # screen.blit(paused_text, paused_position_text)
 
     for element in room:
         for baldoza in element:
@@ -419,7 +489,15 @@ while inicio:
 
 
     # Dibujar hitbox verde para rectángulo 1
-    # pygame.draw.rect(screen, GREEN, bat_position + [60, 60], 2)
+    # pygame.draw.rect(screen, GREEN, skull_position + [60, 60], 2)
+
+    if lives <= 0:
+        pygame.mixer.music.pause()
+        show_paused_text(screen, "GAME OVER", font_score, (WIDTH / 2, HEIGHT / 2), RED)
+        wait_user()
+        
+        
+
 
     # Dibujar rectángulo 1
     if bat_direction_x == 1:
@@ -436,6 +514,8 @@ while inicio:
     else:
         screen.blit(skull_left, skull_position)
 
+    # if paused == True:
+    #     show_paused_text(screen, "PAUSED", font_score, (WIDTH / 2, HEIGHT / 2), RED)
 
     # hitbox
 
@@ -450,7 +530,7 @@ while inicio:
 
 # salir
 
-pygame.quit()
+terminar()
 
 
 

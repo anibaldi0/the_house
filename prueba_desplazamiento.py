@@ -85,46 +85,114 @@
 #     # Controlar la velocidad del bucle
 #     clock.tick(60)
 
+
+# import pygame
+# import sys
+
+# # Inicializar Pygame
+# pygame.init()
+
+# # Definir colores
+# WHITE = (255, 255, 255)
+
+# # Configuración de la ventana
+# width, height = 400, 400
+# screen = pygame.display.set_mode((width, height))
+# pygame.display.set_caption("Mover Rectángulo")
+
+# # Definir variables para el control del tiempo
+# start_time = pygame.time.get_ticks()
+# delay_time = 2000  # 2 segundos en milisegundos
+# return_time = 3000  # 3 segundos en milisegundos
+
+# def move_figure(current_position, target_position):
+#     current_time = pygame.time.get_ticks()
+#     elapsed_time = current_time - start_time
+
+#     if elapsed_time >= delay_time and elapsed_time < return_time:
+#         # Traslada el rectángulo a la nueva posición después de 2 segundos
+#         rect.x, rect.y = target_position
+#     elif elapsed_time >= return_time:
+#         # Vuelve el rectángulo a la posición original después de 3 segundos
+#         rect.x, rect.y = current_position
+
+# # Definir el rectángulo inicial
+# rect_size = (50, 50)
+# rect_color = WHITE
+# current_position = (100, 200)
+# target_position = (300, 300)
+# rect = pygame.Rect(current_position, rect_size)
+
+# # Bucle principal del juego
+# while True:
+#     for event in pygame.event.get():
+#         if event.type == pygame.QUIT:
+#             pygame.quit()
+#             sys.exit()
+
+#     # Lógica del juego
+#     move_figure(current_position, target_position)
+
+#     # Dibujar en la pantalla
+#     screen.fill((0, 0, 0))  # Limpia la pantalla
+#     pygame.draw.rect(screen, rect_color, rect)  # Dibuja el rectángulo en la nueva posición
+
+#     # Actualizar la pantalla
+#     pygame.display.flip()
+
+#     # Controlar la velocidad del bucle
+#     pygame.time.Clock().tick(60)  # 60 fotogramas por segundo
+
+
 import pygame
+import sys
 
-def move_rect(rect, start_x, end_x, speed):
-    # Verificar la dirección del movimiento
-    if rect.x < end_x and rect.x + speed <= end_x:
-        rect.x += speed
-    else:
-        rect.x -= speed
-
-
-# Ejemplo de uso:
+# Inicializar Pygame
 pygame.init()
 
-# Configuración del rectángulo
-rect = pygame.Rect(0, 0, 30, 30)
-start_x = 100
-end_x = 500
-speed = 5
+# Configuración de la pantalla
+width, height = 800, 600
+screen = pygame.display.set_mode((width, height))
+pygame.display.set_caption('Mover Rectángulo')
+
+# Color
+black = (0, 0, 0)
+white = (255, 255, 255)
+
+# Definir el rectángulo inicial
+current_position = (-100, -200)
+rect_width, rect_height = 50, 50
+rect = pygame.Rect(current_position[0], current_position[1], rect_width, rect_height)
+
+# move_time = 5000
+
+def move_figures(current_position, new_position, move_time = 1000):
+    # global rect
+    if pygame.time.get_ticks() >= move_time:
+        current_position = new_position
+        move_time = pygame.time.get_ticks() + move_time
 
 # Bucle principal
-clock = pygame.time.Clock()
-screen = pygame.display.set_mode((600, 400))
-
-running = True
-while running:
+while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            pygame.quit()
+            sys.exit()
 
-    # Lógica de movimiento del rectángulo
-    move_rect(rect, start_x, end_x, speed)
+    # Llamada a la función move_rect con la nueva posición (200, 300)
+    new_position = (200, 300)
+    move_figures(rect, new_position, 1000)
 
-    # Dibujar el rectángulo y actualizar la pantalla
-    screen.fill((255, 255, 255))
-    pygame.draw.rect(screen, (0, 0, 255), rect)
+    # Dibujar en la pantalla
+    screen.fill(black)
+    pygame.draw.rect(screen, white, rect)
+
+    # Actualizar la pantalla
     pygame.display.flip()
 
-    clock.tick(60)
+    # Controlar la velocidad del bucle
+    pygame.time.Clock().tick(60)
 
-pygame.quit()
 
 
 

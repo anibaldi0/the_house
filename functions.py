@@ -7,11 +7,16 @@ import sys
 from colors import *
 import random
 
+# Definir variables
+timer_active = False
+timer_start_time = 0
+timer_duration = 2000
+
 # Variables del láser
 laser_width = 20
 laser_height = 20
 laser_color = RED
-laser_speed = 5
+laser_speed = 10
 laser_state = "ready"  # Puede estar "ready" o "fire"
 laser_direction_x = 1
 # laser_direction_y = 1
@@ -112,7 +117,6 @@ def create_monsters_movements(position, direction, speed, direction_limit):
 
     # Devolver las nuevas coordenadas y la dirección actualizada
     return [x, y], direction
-
 
 
 
