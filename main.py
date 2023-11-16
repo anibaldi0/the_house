@@ -33,11 +33,31 @@ pumpkin = pygame.image.load("images/calabaza_01.png")
 pygame.display.set_icon(pumpkin)
 pygame.display.set_caption("The House")
 
+player_name, previous_score = load_score()
+
 def terminar():
+    """
+    Esta función no toma parametros.
+
+    Parámetros:
+    sale del juego.
+
+    Devuelve:
+    None.
+    """
     pygame.quit()
     exit()
 
 def wait_user():
+    """
+    Esta función no toma parametros.
+
+    Parámetros:
+    entra en bucle infinito para agregar una pausa al juego.
+
+    Devuelve:
+    return para salir del bucle
+    """
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -48,6 +68,18 @@ def wait_user():
                 return
             
 def show_paused_text(surface, texto, fuente, coordenadas, color_fuente):
+    """
+    Muestra un texto de pausa en la superficie especificada.
+
+    Parametros:
+    - surface: La superficie en la que se mostrara el texto de pausa.
+    - texto: El texto que se mostrará.
+    - fuente: El objeto de fuente utilizado para renderizar el texto.
+    - coordenadas: La posición central donde se mostrará el texto.
+    - color_fuente: El color del texto.
+
+    No devuelve nada. Simplemente muestra el texto en la superficie especificada.
+    """
     paused_text = fuente.render(texto, True, color_fuente)
     rect_paused_text = paused_text.get_rect()
     rect_paused_text.center = coordenadas
@@ -127,8 +159,6 @@ list_intro_ready_player = [image_intro_ready_player_01, image_intro_ready_player
 current_image = 0
 image_display_time = 0.5
 last_image_time = time.time()
-
-
 
 show_intro_images(list_intro_house, screen, image_display_time, WIDTH, HEIGHT)
 
@@ -245,14 +275,19 @@ while inicio:
                 lives_down.play()
                 collision_with_tree = True
                 lives -= 1
-            elif limit[0] == baldoza_water:
-                lives_down.play()
-                collision_with_water = True
-                lives -= 1
             elif limit[0] == baldoza_door:
                 if text_count_key <= 0:
                     collision_with_door = True
                     lives -= 5
+
+    for water in room[4]:
+        if water[1].colliderect(player_rect):
+            if water[0] == baldoza_water:
+                lives_down.play()
+                collision_with_water = True
+                lives -= 1
+                player_rect.x += player_speed_x
+                # player_rect.y += player_speed_y
 
     # Crear un rectángulo para el láser
     if laser_state == "fired":
@@ -284,12 +319,14 @@ while inicio:
     if laser_state == "fired" and laser_rect.colliderect(pygame.Rect(bat_position, (60, 60))):
         text_count_score += 2
         bat_position = [-100, -100]
+        save_score(player_name, text_count_score)
         # current_time = 0  # Reiniciar el temporizador aquí
         # Se ha producido una colisión entre el láser y el bat
         laser_state = "ready"  # Restablecer el estado del láser
     elif laser_state == "fired" and laser_rect.colliderect(pygame.Rect(skull_position, (60, 60))):
         text_count_score += 2
         skull_position = [-100, -100]
+        save_score(player_name, text_count_score)
         # current_time = 0  # Reiniciar el temporizador aquí
         # Se ha producido una colisión entre el láser y el bat
         laser_state = "ready"  # Restablecer el estado del láser
@@ -309,12 +346,13 @@ while inicio:
             text_count_key -= 1
             room[3].append([baldoza_key, pygame.Rect(1050, 160, *BALDOZA_KEY)])
             print(text_count_key)
+            
         print(bat_position, frame)
         ultima_actualizacion = current_time
 
     text_count_key = check_key_collision(room[3], player_center, text_count_key)
     print(text_count_key)
-    if text_count_key == 1 and current_time > 5000 * 1000:
+    if text_count_key == 1 and current_time <= interval:
         text_count_key -= 1
         room[3].append([baldoza_key, pygame.Rect(1050, 160, *BALDOZA_KEY)])
         print(text_count_key)
@@ -348,9 +386,11 @@ while inicio:
             elif room == room_02:
                 if text_count_key > 0:
                     open_door.play()
-                    screen.blit(win_game_text, win_game_rect)
-                    pygame.display.flip()
-                    pygame.time.delay(2000)
+                    pygame.mixer.music.pause()
+                    show_paused_text(screen, "YOU WIN", font_score, (WIDTH / 2, HEIGHT /2), WHITE)
+                    player_name = input_name()  # Pedir el nombre del jugador
+                    save_score(player_name, text_count_score)
+                    wait_user()
                 else:
                     lives_down.play()
                     collision_with_door = True
@@ -358,10 +398,14 @@ while inicio:
 
     # textos
     font_score = pygame.font.Font(None, 45)
+    font_best_score = pygame.font.Font(None, 25)
 
     text_score = font_score.render("Score: {0}".format(text_count_score), True, WHITE)
     text_lives = font_score.render("Lives: {0}".format(lives), True, RED)
     text_key = font_score.render("Keys: {0}".format(text_count_key), True, ORANGE)
+    player_name_text = font_score.render("{0}".format(player_name), True, GRAY)
+    previous_score_text = font_score.render("{0}".format(previous_score), True, GRAY)
+    best_score = font_best_score.render("Best Score", True, GREEN)
 
     # dibujos
     screen.blit(background_image, (0, 0))
@@ -370,14 +414,17 @@ while inicio:
     text_position_score = (550, 100)
     text_position_lives = (300, 100)
     text_position_key = (800, 100)
-    paused_position_text = (550, 500)
-    
-
+    player_name_position = (100, 110)
+    previous_score_position = (170, 110)
+    best_score_position = (100, 90)
 
     # dibujar texto
     screen.blit(text_score, text_position_score)
     screen.blit(text_lives, text_position_lives)
     screen.blit(text_key, text_position_key)
+    screen.blit(player_name_text, player_name_position)
+    screen.blit(previous_score_text, previous_score_position)
+    screen.blit(best_score, best_score_position)
 
     # screen.blit(paused_text, paused_position_text)
 
@@ -494,6 +541,8 @@ while inicio:
     if lives <= 0:
         pygame.mixer.music.pause()
         show_paused_text(screen, "GAME OVER", font_score, (WIDTH / 2, HEIGHT / 2), RED)
+        player_name = input_name()
+        save_score(player_name, text_count_score)
         wait_user()
         
         

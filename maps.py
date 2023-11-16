@@ -7,7 +7,7 @@ map_01 = [
             "M MMMM AAAAFMMMM",
             "M      SSSS   FM",
             "MFMMMMMMMMMMMM P",
-            "M             SM",
+            "M             MM",
             "MMMMMMMMMMMMMMMM",
             ]
 
