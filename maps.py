@@ -3,11 +3,11 @@ map_01 = [
             "MMMMMMMMMMMMMMMM",
             "M              M",
             "M MMMM  MMMMMKMM",
-            "MFMMMM      MMMM",
-            "M MMMM AAAAFMMMM",
+            "MMMMMM      MMMM",
+            "MFMMMM AAAAFMMMM",
             "M      SSSS   FM",
             "MFMMMMMMMMMMMM P",
-            "M             MM",
+            "MFFFFFFFFFFFFFMM",
             "MMMMMMMMMMMMMMMM",
             ]
 

@@ -56,6 +56,8 @@ try:
     bat_right = pygame.transform.scale(pygame.image.load("images/bat_der_01.png"), (60, 60)).convert_alpha()
     bat_left = pygame.transform.flip(bat_right, True, False)  # Voltear horizontalmente
 
+    baldoza_book = pygame.transform.scale(pygame.image.load("images/spell-book.png"), (60, 60)).convert_alpha
+
 
     # intro casa
     image_intro_house_01 = pygame.image.load("images/casa_embrujada_murci_01.png").convert()

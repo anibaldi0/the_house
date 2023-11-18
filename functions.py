@@ -1,11 +1,12 @@
 
 import pygame
 from constants import *
-from images import baldoza_wall, baldoza_water, baldoza_tree, baldoza_door, baldoza_apple_01, baldoza_key
+from images import baldoza_wall, baldoza_water, baldoza_tree, baldoza_door, baldoza_apple_01, baldoza_key, baldoza_book
 import time
 import sys
 from colors import *
 import random
+import math
 
 # Definir variables
 timer_active = False
@@ -23,7 +24,7 @@ laser_direction_x = 1
 laser_x = 0
 laser_y = 0
 
-def build_map(surface, map) -> list:
+def build_map(map) -> list:
     """
     funcion que crea los mapas del juego
 
@@ -33,6 +34,7 @@ def build_map(surface, map) -> list:
 
     retorna las listas de baldosas creadas en el mapa
     """
+    books = []
     limits = []
     waters = []
     fruits = []
@@ -55,10 +57,12 @@ def build_map(surface, map) -> list:
                 doors.append([baldoza_door, pygame.Rect(x, y, *BALDOZA)])
             elif baldoza == "K":
                 keys.append([baldoza_key, pygame.Rect(x + 10, y + 10, *BALDOZA_KEY)])
+            elif baldoza == "B":
+                books.append([baldoza_book, pygame.Rect(x + 10, y + 10, *BALDOZA_KEY)])
             x += 80
         x = 0
         y += 80
-    return limits, fruits, doors, keys, waters
+    return limits, fruits, doors, keys, waters, books
 
 def finish():
     pygame.quit()
@@ -156,13 +160,20 @@ def create_monsters_movements(position, direction, speed, position_limit):
     # Devolver las nuevas coordenadas y la dirección actualizada
     return [x, y], direction
 
-
-# def save_score(player_name, score):
-#     with open("score.txt", "w") as file:
-#         file.write("{0} {1}\n".format(player_name, score))
-
-
 def save_score(player_name, score):
+    """
+    esta funcion recibe 2 parametros y guarda el nombre y mayor score.
+    maneja 3 excepciones, uno para buscar y abrir el archivo donde se guardaran los datos, 
+    otra para evaluar valores enteros y la otra para evaluar los indices de la lista 
+    para acceder a los elementos del archivo.
+    Por ultimo se compara el nuevo score con el previo y se guarda el nuevo si es mayor
+
+    parametros: 
+    - player_name: nombre del jugador
+    - score: mayor score
+
+    retorna None
+    """
     try:
         with open("score.txt", "r") as file:
             line = file.readline()
@@ -180,6 +191,13 @@ def save_score(player_name, score):
 
 
 def input_name():
+    """
+    Funcion sin parametros de entrada, maneja una excepcion para corroborar
+    valores ingresados en el input y cuenta que no sean mas de tres valores.
+    Luego de ingresar los valores termina el programa
+
+    retorna None
+    """
     max_attempts = 3
     current_attempt = 0
 
@@ -190,8 +208,8 @@ def input_name():
                 return player_name
             else:
                 raise ValueError("Invalid input. Please enter exactly 3 letters or digits.")
-        except ValueError as e:
-            print(e)
+        except ValueError as exception:
+            print(exception)
             current_attempt += 1
 
     print(f"Max attempts reached. Using default name.")
@@ -214,6 +232,10 @@ def load_score():
                 return None, 0
     except FileNotFoundError:
         return None, 0
+
+# funcion para persecucion
+def persecution(a, b, distance):
+    return (math.sqrt(((b.x - a.x) ** 2) + ((b.y - a.y) ** 2))) < distance
 
 
 

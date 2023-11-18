@@ -88,8 +88,8 @@ def show_paused_text(surface, texto, fuente, coordenadas, color_fuente):
 
 
 # datas
-room_01 = build_map(screen, map_01)
-room_02 = build_map(screen, map_02)
+room_01 = build_map(map_01)
+room_02 = build_map(map_02)
 
 # el juego empieza en la habitacion 1
 room = room_01
@@ -119,13 +119,15 @@ current_time = 0
 
 # bat
 bat_position = [80, 100]
-bat_speed = 5
+bat_speed = 3
 bat_direction_x = 1
+bat_hidden = False
 
 #skull
 skull_position = [500, 250]
 skull_speed = 3
 skull_direction_x = 1
+skull_hidden = False
 
 
 moving_right = False
@@ -139,6 +141,7 @@ collision_with_door = False
 collision_with_tree = False
 paused = False
 playing_music = True
+laser_ready = False
 
 
 wolf_sound = pygame.mixer.music.load("sound/mixkit-wolves-at-scary-forest-2485.wav")
@@ -159,6 +162,11 @@ list_intro_ready_player = [image_intro_ready_player_01, image_intro_ready_player
 current_image = 0
 image_display_time = 0.5
 last_image_time = time.time()
+
+# Variables para el temporizador
+start_time = pygame.time.get_ticks()
+delay = 3000
+bat_hidden = False
 
 show_intro_images(list_intro_house, screen, image_display_time, WIDTH, HEIGHT)
 
@@ -208,19 +216,19 @@ while inicio:
             if event.key == pygame.K_UP:
                 # shoot
                 if event.key == pygame.K_UP:
-                    if laser_state == "ready":
+                    if laser_state == "ready" and laser_ready == True:
                         laser_sound.play()
                         laser_x = player_rect.x + player_rect.width  # Posiciona el láser a la derecha del jugador
                         laser_y = player_rect.y + 15
                         laser_state = "fired"
                 if pygame.key.get_pressed()[pygame.K_d]:  # Verifica si K_UP y K_d están presionadas simultáneamente
-                    if laser_state == "ready":
+                    if laser_state == "ready" and laser_ready == True:
                         laser_sound.play()
                         laser_x = player_rect.x + player_rect.width # Posiciona el láser a la derecha del jugador
                         laser_y = player_rect.y + 15
                         laser_state = "fired"
                 elif pygame.key.get_pressed()[pygame.K_a]:  # Verifica si K_UP y K_a están presionadas simultáneamente
-                    if laser_state == "ready":
+                    if laser_state == "ready" and laser_ready == True:
                         laser_sound.play()
                         laser_x = player_rect.x - laser_width # Posiciona el láser a la izquierda del jugador
                         laser_y = player_rect.y + 15
@@ -310,80 +318,74 @@ while inicio:
     # verificar colision entre player y bat
     if player_rect.colliderect(pygame.Rect(bat_position, (60, 60))):
         lives_down.play()
-        lives -= 1
+        lives -= 500
     elif player_rect.colliderect(pygame.Rect(skull_position, (60, 60))):
         lives_down.play()
-        lives -= 1
+        lives -= 500
 
     # Verificar colisión del láser con el bat
     if laser_state == "fired" and laser_rect.colliderect(pygame.Rect(bat_position, (60, 60))):
         text_count_score += 2
         bat_position = [-100, -100]
+        laser_ready = False
         save_score(player_name, text_count_score)
-        # current_time = 0  # Reiniciar el temporizador aquí
-        # Se ha producido una colisión entre el láser y el bat
-        laser_state = "ready"  # Restablecer el estado del láser
+        laser_state = "ready"
+        bat_hidden = True
+        start_time = pygame.time.get_ticks()
+
     elif laser_state == "fired" and laser_rect.colliderect(pygame.Rect(skull_position, (60, 60))):
         text_count_score += 2
         skull_position = [-100, -100]
+        laser_ready = False
         save_score(player_name, text_count_score)
-        # current_time = 0  # Reiniciar el temporizador aquí
-        # Se ha producido una colisión entre el láser y el bat
-        laser_state = "ready"  # Restablecer el estado del láser
-        # Aquí puedes agregar más lógica, como restar puntos al bat, reproducir un sonido, etc.
-        
-    # Incrementar el tiempo transcurrido
-    current_time = pygame.time.get_ticks()
-    if current_time - ultima_actualizacion >= interval:
-        frame += 1
-        if bat_position == [-100, -100] and frame >= interval:
-            bat_position = [80, 100]
-            frame = 0
-        elif skull_position == [-100, -100] and frame >= interval:
-            skull_position = [500, 250]
-            frame = 0
-        elif text_count_key == 1 and frame >= interval:
-            text_count_key -= 1
-            room[3].append([baldoza_key, pygame.Rect(1050, 160, *BALDOZA_KEY)])
-            print(text_count_key)
-            
-        print(bat_position, frame)
-        ultima_actualizacion = current_time
+        laser_state = "ready"
+        skull_hidden = True  # Indicar que el bat está oculto
+        start_time = pygame.time.get_ticks()
+
+    # Verificar si el tiempo de espera ha transcurrido (3 segundos)
+    if bat_hidden and pygame.time.get_ticks() - start_time >= delay:
+        bat_position = [80, 100]
+        bat_hidden = False 
+        hide_bat_time = 0
+    if skull_hidden and pygame.time.get_ticks() - start_time >= delay:
+        skull_position = [500, 250]
+        skull_hidden = False 
+        hide_bat_time = 0
 
     text_count_key = check_key_collision(room[3], player_center, text_count_key)
     print(text_count_key)
-    if text_count_key == 1 and current_time <= interval:
-        text_count_key -= 1
-        room[3].append([baldoza_key, pygame.Rect(1050, 160, *BALDOZA_KEY)])
-        print(text_count_key)
 
     for fruit in room[1][:]:
         if fruit[1].collidepoint(player_center):
             room[1].remove(fruit)
             text_count_score += 1
             pumpkin_sound.play()
+            laser_ready = True
             if lives < 500:
                 lives += 50
             else:
                 lives = 500
+            
         
 
     for door in room[2]:
         if door[1].collidepoint(player_center):
             if room == room_01:
-                if text_count_key > 0:
-                    open_door.play()
-                    room = room_02
-                    player_rect.x = 400
-                    player_rect.y = 600
-                    text_count_key -= 1
-                else:
-                    lives_down.play()
-                    collision_with_door = True
-                    lives -= 5
+                # if text_count_key > 0:
+                #     bat_position = [-200, -100]
+                #     skull_position = [-200, -100]
+                #     open_door.play()
+                #     room = room_02
+                #     player_rect.x = 400
+                #     player_rect.y = 600
+                #     text_count_key -= 1
+                # else:
+                #     lives_down.play()
+                #     collision_with_door = True
+                #     lives -= 5
                         
 
-            elif room == room_02:
+            # elif room == room_02:
                 if text_count_key > 0:
                     open_door.play()
                     pygame.mixer.music.pause()
@@ -406,6 +408,7 @@ while inicio:
     player_name_text = font_score.render("{0}".format(player_name), True, GRAY)
     previous_score_text = font_score.render("{0}".format(previous_score), True, GRAY)
     best_score = font_best_score.render("Best Score", True, GREEN)
+    # laser_ready = font_best_score.render("Laser: {0}".format(text_laser_ready), True, WHITE)
 
     # dibujos
     screen.blit(background_image, (0, 0))
@@ -417,6 +420,7 @@ while inicio:
     player_name_position = (100, 110)
     previous_score_position = (170, 110)
     best_score_position = (100, 90)
+    # laser_ready_position = (1000, 110)
 
     # dibujar texto
     screen.blit(text_score, text_position_score)
@@ -425,6 +429,7 @@ while inicio:
     screen.blit(player_name_text, player_name_position)
     screen.blit(previous_score_text, previous_score_position)
     screen.blit(best_score, best_score_position)
+    # screen.blit(laser_ready, laser_ready_position)
 
     # screen.blit(paused_text, paused_position_text)
 
@@ -500,7 +505,7 @@ while inicio:
 
         screen.blit(player_image, player_rect)
 
-    # Lógica del movimiento del láser
+    #Lógica del movimiento del láser
     if laser_state == "fired":
         laser_x += laser_speed * laser_direction_x
 
@@ -562,9 +567,6 @@ while inicio:
         screen.blit(skull_right, skull_position)
     else:
         screen.blit(skull_left, skull_position)
-
-    # if paused == True:
-    #     show_paused_text(screen, "PAUSED", font_score, (WIDTH / 2, HEIGHT / 2), RED)
 
     # hitbox
 
